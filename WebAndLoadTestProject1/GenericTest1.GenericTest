@@ -1,0 +1,5 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<GenericTest name="GenericTest1" storage="d:\projects\c#\testclientchat\webandloadtestproject1\generictest1.generictest" id="b55eac6f-3636-4c2b-8b67-41d08448616b" xmlns="http://microsoft.com/schemas/VisualStudio/TeamTest/2010">
+  <Command filename="D:\projects\C#\TestClientChat\TestClientChat\bin\Debug\TestClientChat.exe" workingDirectory="%TestOutputDirectory%" />
+  <SummaryXmlFile path="%TestOutputDirectory%\&lt;Enter summary file name here&gt;" />
+</GenericTest>
