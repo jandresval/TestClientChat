@@ -1,7 +1,5 @@
 ﻿using Microsoft.AspNet.SignalR.Client;
 using NUnit.Framework;
-using ServerBingo.Models;
-using ServerBingo.ModelsView;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -19,56 +17,23 @@ namespace TestClientChat
         [Test]
         static void Main(string[] args)
         {
-            Console.WriteLine("Starting client  http://localhost:8090/");
+            Console.WriteLine("Starting client  http://192.168.0.110:8089");
 
-            var hubConnection = new HubConnection("http://localhost:8090/");
-            hubConnection.TraceLevel = TraceLevels.StateChanges;
-            hubConnection.TraceWriter = Console.Out;
-            IHubProxy myHubProxy = hubConnection.CreateHubProxy("BingoHub");
+            var hubConnection = new HubConnection("http://192.168.0.110:8089/");
+            //hubConnection.TraceLevel = TraceLevels.All;
+            //hubConnection.TraceWriter = Console.Out;
+            IHubProxy myHubProxy = hubConnection.CreateHubProxy("MyHub");
 
-            myHubProxy.On<string, string>("send", (name, message) => Console.Write("Recieved Send: " + name + ": " + message + "\n"));
-            myHubProxy.On<Bingousuario>("devolverInfoUsuario", (bingoUsuario) => Console.WriteLine("Recieved devolverInfo: " + bingoUsuario.Alias));
-            //myHubProxy.On("heartbeat", () => Console.Write("Recieved heartbeat \n"));
-            //myHubProxy.On<HelloModel>("sendHelloObject", hello => Console.Write("Recieved sendHelloObject {0}, {1} \n", hello.Molly, hello.Age));
+            myHubProxy.On<string, string>("addMessage", (name, message) => Console.Write("Recieved addMessage: " + name + ": " + message + "\n"));
+            myHubProxy.On("heartbeat", () => Console.Write("Recieved heartbeat \n"));
+            myHubProxy.On<HelloModel>("sendHelloObject", hello => Console.Write("Recieved sendHelloObject {0}, {1} \n", hello.Molly, hello.Age));
 
             hubConnection.Start().Wait(10000);
 
-            UsuarioConexion usuarioConexion = new UsuarioConexion();
-
-            usuarioConexion.Alias = "Jaime1";
-            usuarioConexion.Ip = "192.168.0.1";
-            usuarioConexion.Macaddress = "000000000000";
-
-            myHubProxy.Invoke("conectarUsurio", usuarioConexion).ContinueWith(task =>
-                {
-                    if (task.IsFaulted)
-                    {
-                        Console.WriteLine("!!! There was an error opening the connection:{0} \n", task.Exception.GetBaseException());
-                    }
-                }).Wait();
 
             while (true)
             {
                 string key = Console.ReadLine();
-                if (key.ToUpper() == "U")
-                {
-                    var bingousuario = myHubProxy.Invoke<IEnumerable<Bingousuario>>("DevolverUsuario", "Jaime1").Result;
-
-                    foreach (Bingousuario bingoUsu in bingousuario)
-                    {
-                        Console.WriteLine("Alias: {0}.", bingoUsu.Alias);
-                        //Console.WriteLine("Alias: {0}.", bingoUsu.);
-                    }
-
-                    myHubProxy.Invoke("sendUsuario", "Jaime2").ContinueWith(task =>
-                        {
-                            if (task.IsFaulted)
-                            {
-                                Console.WriteLine("!!! There was an error opening the connection:{0} \n", task.Exception.GetBaseException());
-                            }
-                        }).Wait();
-
-                }
                 if (key.ToUpper() == "W")
                 {
                     myHubProxy.Invoke("addMessage", "client message", " sent from console client").ContinueWith(task =>
