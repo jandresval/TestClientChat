@@ -35,7 +35,7 @@ namespace TestClientChat
 
             UsuarioConexion usuarioConexion = new UsuarioConexion();
 
-            usuarioConexion.Alias = "Jaime1";
+            usuarioConexion.Alias = "Jaime5";
             usuarioConexion.Ip = "192.168.0.1";
             usuarioConexion.Macaddress = "000000000000";
 
@@ -52,13 +52,12 @@ namespace TestClientChat
                 string key = Console.ReadLine();
                 if (key.ToUpper() == "U")
                 {
-                    var bingousuario = myHubProxy.Invoke<IEnumerable<Bingousuario>>("DevolverUsuario", "Jaime1").Result;
+                    Bingousuario bingousuario = myHubProxy.Invoke<Bingousuario>("DevolverUsuario", "Jaime1").Result;
 
-                    foreach (Bingousuario bingoUsu in bingousuario)
-                    {
-                        Console.WriteLine("Alias: {0}.", bingoUsu.Alias);
-                        //Console.WriteLine("Alias: {0}.", bingoUsu.);
-                    }
+                    if (!(bingousuario == null))
+                        Console.WriteLine("Alias: {0}.", bingousuario.Alias);
+                    else
+                        Console.WriteLine("No devolvio nada");
 
                     myHubProxy.Invoke("sendUsuario", "Jaime2").ContinueWith(task =>
                         {
