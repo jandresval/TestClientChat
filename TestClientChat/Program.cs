@@ -11,41 +11,19 @@ using Xunit;
 
 namespace TestClientChat
 {
-    [TestFixture]
     class Program
     {
-        
+        private static HubConnection hubConnection;
+        private static IHubProxy myHubProxy;
 
-        [Test]
         static void Main(string[] args)
         {
             Console.WriteLine("Starting client  http://localhost:8090/");
 
-            var hubConnection = new HubConnection("http://localhost:8090/");
-            hubConnection.TraceLevel = TraceLevels.StateChanges;
-            hubConnection.TraceWriter = Console.Out;
-            IHubProxy myHubProxy = hubConnection.CreateHubProxy("BingoHub");
 
-            myHubProxy.On<string, string>("send", (name, message) => Console.Write("Recieved Send: " + name + ": " + message + "\n"));
-            myHubProxy.On<Bingousuario>("devolverInfoUsuario", (bingoUsuario) => Console.WriteLine("Recieved devolverInfo: " + bingoUsuario.Alias));
-            //myHubProxy.On("heartbeat", () => Console.Write("Recieved heartbeat \n"));
-            //myHubProxy.On<HelloModel>("sendHelloObject", hello => Console.Write("Recieved sendHelloObject {0}, {1} \n", hello.Molly, hello.Age));
+            Conexion();
 
-            hubConnection.Start().Wait(10000);
-
-            UsuarioConexion usuarioConexion = new UsuarioConexion();
-
-            usuarioConexion.Alias = "Jaime5";
-            usuarioConexion.Ip = "192.168.0.1";
-            usuarioConexion.Macaddress = "000000000000";
-
-            myHubProxy.Invoke("conectarUsurio", usuarioConexion).ContinueWith(task =>
-                {
-                    if (task.IsFaulted)
-                    {
-                        Console.WriteLine("!!! There was an error opening the connection:{0} \n", task.Exception.GetBaseException());
-                    }
-                }).Wait();
+            
 
             while (true)
             {
@@ -67,6 +45,16 @@ namespace TestClientChat
                             }
                         }).Wait();
 
+                }
+                if (key.ToUpper() == "D")
+                {
+                    myHubProxy.Invoke("DesconectarUsuario", "Jaime5").ContinueWith(task =>
+                    {
+                        if (task.IsFaulted)
+                        {
+                            Console.WriteLine("!!! There was an error opening the connection:{0} \n", task.Exception.GetBaseException());
+                        }
+                    }).Wait();
                 }
                 if (key.ToUpper() == "W")
                 {
@@ -111,6 +99,44 @@ namespace TestClientChat
                     break;
                 }
             }
+        }
+
+        private static void Conexion()
+        {
+            hubConnection = new HubConnection("http://localhost:8090/");
+            hubConnection.TraceLevel = TraceLevels.StateChanges;
+            hubConnection.TraceWriter = Console.Out;
+            myHubProxy = hubConnection.CreateHubProxy("BingoHub");
+
+            myHubProxy.On<string, string>("send", (name, message) => Console.Write("Recieved Send: " + name + ": " + message + "\n"));
+            myHubProxy.On<Bingousuario>("devolverInfoUsuario", (bingoUsuario) => Console.WriteLine("Recieved devolverInfo: " + bingoUsuario.Alias));
+            myHubProxy.On("desconectar", (val) =>
+            {
+                Reconectar();
+            });
+
+            hubConnection.Start().Wait(10000);
+
+            UsuarioConexion usuarioConexion = new UsuarioConexion();
+
+            usuarioConexion.Alias = "Jaime5";
+            usuarioConexion.Ip = "192.168.0.1";
+            usuarioConexion.Macaddress = "000000000000";
+
+            myHubProxy.Invoke("conectarUsurio", usuarioConexion).ContinueWith(task =>
+            {
+                if (task.IsFaulted)
+                {
+                    Console.WriteLine("!!! There was an error opening the connection:{0} \n", task.Exception.GetBaseException());
+                }
+            }).Wait();
+
+        }
+
+        private static void Reconectar()
+        {
+            hubConnection.Dispose();
+            Conexion();
         }
 
         private static void hubConnection_Closed()
