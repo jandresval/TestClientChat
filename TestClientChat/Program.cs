@@ -18,7 +18,7 @@ namespace TestClientChat
 
         static void Main(string[] args)
         {
-            Console.WriteLine("Starting client  http://localhost:8090/");
+            
 
 
             Conexion();
@@ -48,7 +48,7 @@ namespace TestClientChat
                 }
                 if (key.ToUpper() == "D")
                 {
-                    myHubProxy.Invoke("DesconectarUsuario", "Jaime5").ContinueWith(task =>
+                    myHubProxy.Invoke("DesconectarUsuario", "Jaime2").ContinueWith(task =>
                     {
                         if (task.IsFaulted)
                         {
@@ -93,6 +93,10 @@ namespace TestClientChat
                     }).Wait();
                     Console.WriteLine("client sendHelloObject sent to server\n");
                 }
+                if (key.ToUpper() == "CO")
+                {
+                    Conexion();
+                }
                 if (key.ToUpper() == "C")
                 {
                     
@@ -103,14 +107,24 @@ namespace TestClientChat
 
         private static void Conexion()
         {
+
+            Console.WriteLine("Starting client  http://localhost:8090/");
+
+
             hubConnection = new HubConnection("http://localhost:8090/");
             hubConnection.TraceLevel = TraceLevels.StateChanges;
             hubConnection.TraceWriter = Console.Out;
             myHubProxy = hubConnection.CreateHubProxy("BingoHub");
 
             myHubProxy.On<string, string>("send", (name, message) => Console.Write("Recieved Send: " + name + ": " + message + "\n"));
-            myHubProxy.On<Bingousuario>("devolverInfoUsuario", (bingoUsuario) => Console.WriteLine("Recieved devolverInfo: " + bingoUsuario.Alias));
-            myHubProxy.On("desconectar", (val) =>
+            myHubProxy.On<Bingousuario>("devolverInfoUsuario", (bingoUsuario) =>
+            {
+                if (!(bingoUsuario == null))
+                    Console.WriteLine("Recieved devolverInfo: " + bingoUsuario.Alias);
+                else
+                    Console.WriteLine("Usuario empty");
+            });
+            myHubProxy.On("desconectar", () =>
             {
                 Reconectar();
             });
@@ -123,7 +137,7 @@ namespace TestClientChat
             usuarioConexion.Ip = "192.168.0.1";
             usuarioConexion.Macaddress = "000000000000";
 
-            myHubProxy.Invoke("conectarUsurio", usuarioConexion).ContinueWith(task =>
+            myHubProxy.Invoke("conectarUsuario", usuarioConexion).ContinueWith(task =>
             {
                 if (task.IsFaulted)
                 {
@@ -136,7 +150,6 @@ namespace TestClientChat
         private static void Reconectar()
         {
             hubConnection.Dispose();
-            Conexion();
         }
 
         private static void hubConnection_Closed()
