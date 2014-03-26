@@ -48,7 +48,8 @@ namespace TestClientChat
                 }
                 if (key.ToUpper() == "D")
                 {
-                    myHubProxy.Invoke("DesconectarUsuario", "Jaime2").ContinueWith(task =>
+                    string user = Console.ReadLine();
+                    myHubProxy.Invoke("DesconectarUsuario", user).ContinueWith(task =>
                     {
                         if (task.IsFaulted)
                         {
@@ -133,17 +134,24 @@ namespace TestClientChat
 
             UsuarioConexion usuarioConexion = new UsuarioConexion();
 
-            usuarioConexion.Alias = "Jaime5";
+            usuarioConexion.Alias = "Jaime1";
             usuarioConexion.Ip = "192.168.0.1";
             usuarioConexion.Macaddress = "000000000000";
 
-            myHubProxy.Invoke("conectarUsuario", usuarioConexion).ContinueWith(task =>
+            try
             {
-                if (task.IsFaulted)
+                myHubProxy.Invoke("conectarUsuario", usuarioConexion).ContinueWith(task =>
                 {
-                    Console.WriteLine("!!! There was an error opening the connection:{0} \n", task.Exception.GetBaseException());
-                }
-            }).Wait();
+                    if (task.IsFaulted)
+                    {
+                        Console.WriteLine("!!! There was an error opening the connection:{0} \n", task.Exception.GetBaseException());
+                    }
+                }).Wait();
+            }
+            catch(HubException ex)
+            {
+                Console.WriteLine("!!! There was an error opening the connection:{0} \n", ex.GetBaseException());
+            }
 
         }
 
